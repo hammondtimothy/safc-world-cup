@@ -886,6 +886,13 @@ async function saveAsImage(){
   const btn=event&&event.target;
   const original=btn?btn.textContent:null;
   if(btn){btn.textContent="Rendering…";btn.disabled=true;}
+
+  // Build an off-screen clone fixed at phone width so the image always
+  // looks the same (readable on WhatsApp) regardless of what device/window
+  // size triggered the export.
+  const SHOT_WIDTH=420;
+  let shotHost=null;
+
   try{
     if(!window.html2canvas){
       await new Promise((resolve,reject)=>{
@@ -895,17 +902,44 @@ async function saveAsImage(){
         document.head.appendChild(s);
       });
     }
-    const target=document.querySelector('.wrap');
-    // hide elements that shouldn't appear in the shared image
-    const toHide=document.querySelectorAll('.toolbar, .rowtools');
-    toHide.forEach(el=>el.style.visibility="hidden");
-    const canvas=await window.html2canvas(target,{
+
+    const original_wrap=document.querySelector('.wrap');
+
+    // Clone the whole app into an off-screen container at a fixed mobile width
+    shotHost=document.createElement('div');
+    shotHost.style.cssText=`position:fixed;top:0;left:-99999px;width:${SHOT_WIDTH}px;`+
+      `background:${getComputedStyle(document.body).backgroundColor||'#0E1014'};`;
+    const clone=original_wrap.cloneNode(true);
+    clone.style.maxWidth="none";
+    clone.style.width=SHOT_WIDTH+"px";
+    clone.style.margin="0";
+    shotHost.appendChild(clone);
+    document.body.appendChild(shotHost);
+
+    // strip elements that shouldn't appear in a shared image
+    clone.querySelectorAll('.toolbar, .rowtools').forEach(el=>el.remove());
+
+    // give the browser a moment to lay out the clone and load flag images
+    await new Promise(r=>setTimeout(r,150));
+    const imgs=Array.from(clone.querySelectorAll('img'));
+    await Promise.all(imgs.map(img=>{
+      if(img.complete) return Promise.resolve();
+      return new Promise(res=>{img.onload=img.onerror=res;});
+    }));
+
+    const fullHeight=clone.scrollHeight;
+
+    const canvas=await window.html2canvas(clone,{
       backgroundColor:"#0E1014",
       scale:3,
+      width:SHOT_WIDTH,
+      height:fullHeight,
+      windowWidth:SHOT_WIDTH,
+      windowHeight:fullHeight,
       useCORS:true,
       allowTaint:true
     });
-    toHide.forEach(el=>el.style.visibility="");
+
     canvas.toBlob(blob=>{
       const url=URL.createObjectURL(blob);
       const a=document.createElement('a');
@@ -920,6 +954,7 @@ async function saveAsImage(){
   }catch(e){
     alert("Couldn't create the image — check your connection and try again.");
   }finally{
+    if(shotHost) shotHost.remove();
     if(btn){btn.textContent=original;btn.disabled=false;}
   }
 }
