@@ -10,7 +10,8 @@
     "d": 1,
     "l": 1,
     "goals": 3,
-    "assists": 0
+    "assists": 0,
+    "eliminated": true
   },
   {
     "id": "p2-current",
