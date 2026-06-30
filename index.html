@@ -919,19 +919,33 @@ async function saveAsImage(){
     // strip elements that shouldn't appear in a shared image
     clone.querySelectorAll('.toolbar, .rowtools').forEach(el=>el.remove());
 
+    // kill the row entrance animation on the clone — we want every row fully
+    // visible immediately, not mid fade-in when the screenshot is taken
+    clone.querySelectorAll('.row').forEach(el=>{
+      el.style.animation="none";
+      el.style.opacity="1";
+      el.style.transform="none";
+    });
+    clone.querySelectorAll('.barfill').forEach(el=>{
+      el.style.transition="none";
+    });
+
     // give the browser a moment to lay out the clone and load flag images
-    await new Promise(r=>setTimeout(r,150));
+    await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
     const imgs=Array.from(clone.querySelectorAll('img'));
     await Promise.all(imgs.map(img=>{
       if(img.complete) return Promise.resolve();
       return new Promise(res=>{img.onload=img.onerror=res;});
     }));
+    await new Promise(r=>setTimeout(r,80));
 
-    const fullHeight=clone.scrollHeight;
+    const fullHeight=clone.scrollHeight+4;
 
     const canvas=await window.html2canvas(clone,{
       backgroundColor:"#0E1014",
       scale:3,
+      x:0,
+      y:0,
       width:SHOT_WIDTH,
       height:fullHeight,
       windowWidth:SHOT_WIDTH,
