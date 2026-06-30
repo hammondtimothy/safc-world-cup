@@ -129,7 +129,8 @@
     "d": 0,
     "l": 1,
     "goals": 0,
-    "assists": 0
+    "assists": 0,
+    "eliminated": true
   },
   {
     "id": "p11-current",
