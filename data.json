@@ -51,7 +51,8 @@
     "d": 1,
     "l": 2,
     "goals": 0,
-    "assists": 0
+    "assists": 0,
+    "eliminated": true
   },
   {
     "id": "p5-current",
