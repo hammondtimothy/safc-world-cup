@@ -90,7 +90,8 @@
     "d": 2,
     "l": 1,
     "goals": 0,
-    "assists": 0
+    "assists": 0,
+    "eliminated": true
   },
   {
     "id": "p8-current",
