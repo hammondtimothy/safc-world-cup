@@ -37,7 +37,8 @@
     "d": 1,
     "l": 2,
     "goals": 1,
-    "assists": 0
+    "assists": 0,
+    "eliminated": true
   },
   {
     "id": "p4-current",
